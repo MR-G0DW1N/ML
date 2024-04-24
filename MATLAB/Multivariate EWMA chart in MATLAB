@@ -1,0 +1,41 @@
+function t = mewma(d)
+    m = mean(d,1);
+
+    std1 = std(d,1);
+
+    %normalizing the data
+    d= d-m;
+    d= d./std1;
+    l = 0.5; % this is the smoothing parameter which can be changed to a diagonal matrix if the values differ for each variable
+    z(1,:) = d(1,:)*l;
+
+    s = size(d);
+
+    %q = eye(52);
+
+    for i =2:s(1,1)
+        z(i,:) = d(i,:)*l + (z(i-1,:))*(l);
+    end
+
+    c = cov(d);
+
+    cz = (l/(2-l))*c; % this formula changes as the number of variables increases, for more accurate results check 'https://www.itl.nist.gov/div898/handbook/pmc/section3/pmc343.htm'
+
+    icz = inv(cz);
+
+ 
+    for i = 1:s(1,1)
+        t(i,:) = z(i,:)*icz*z(i,:)';
+    end
+
+    %taking ucl as mean+3*std
+    ucl = repelem((mean(t)+3*std(t)),s(1,1)); 
+    plot(ucl);
+    text(ucl(1)+(0.5*s(1,1)), ucl(1), 'UCL', 'VerticalAlignment', 'bottom', 'HorizontalAlignment', 'left');
+    hold on;
+    plot(t)
+    ylabel("T-square")
+    xlabel("n")
+    title("MEWMA")
+    hold off;
+end
